@@ -1,5 +1,6 @@
 import util
 import json
+import hashlib
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
@@ -27,7 +28,8 @@ def get_jwk_from_public_key(public_key):
 
 def get_jws(protected_header, payload, private_key):
     protected_header = util.to_base64(json.dumps(protected_header))
-    payload = util.to_base64(json.dumps(payload))
+    if (payload != ""): 
+        payload = util.to_base64(json.dumps(payload))
     message = protected_header + "." + payload
     signature = private_key.sign(
         message.encode('utf8'),
@@ -68,3 +70,9 @@ def load_private_key(filename):
         )
         f.close()
     return private
+
+def get_key_authorization(token, jwk):
+    jwk = json.dumps(jwk, sort_keys=True, separators=(',', ':')).encode('utf8')
+    thumbprint = hashlib.sha256(jwk).digest()
+    thumbprint = util.to_base64(thumbprint)
+    return token + "." + thumbprint

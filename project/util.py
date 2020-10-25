@@ -1,4 +1,7 @@
 import base64
+import crypto
+import time
+import requests
 import binascii
 
 def to_base64(data):
@@ -8,35 +11,41 @@ def to_base64(data):
     data = data.decode("utf8").replace("=", "")
     return data
 
-def get_protected_header(nonce, url, jwk):
-    return {"alg": "RS256", "nonce": nonce, "url": url, "jwk": jwk}
-
-def get_header():
-    return {"Content-Type": "application/jose+json", "User-Agent": "acme-client"}
-
 def int_to_bytes(x: int) -> bytes:
     return x.to_bytes((x.bit_length() + 7) // 8, 'big')
 
-def stringify_dict(payload):
-    '''
-    Convert keys and values of dict to string
-    :param payload: A dict to convert
-    :type payload: dict
-    :returns: dict with string keys and values
-    :rtype: dict
-    '''
-    if isinstance(payload, str):
-        return payload
-    elif isinstance(payload, dict):
-        for key, value in payload.items():
-            if isinstance(key, bytes):
-                key = key.decode("utf-8")
-            if isinstance(value, bytes):
-                value = value.decode("utf-8")
-            payload[key] = value
-        return payload
+def get_protected_header(nonce, url, jwk, kid):
+    if(kid == None):
+        return {"alg": "RS256", "nonce": nonce, "url": url, "jwk": jwk}
     else:
-        raise ValueError(
-            "Unsupported payload type {0} for _stringify_dict()".format(type(payload))
-        )
+        return {"alg": "RS256", "nonce": nonce, "url": url, "kid": kid}
+
+def get_header():
+    return {"Content-Type": "application/jose+json"}
+
+def acme_server_request(client, url, payload):
+    header = get_header()
+    protected_header = get_protected_header(client.acme_nonce, 
+        url, None, client.acme_key_id)
+    data = crypto.get_jws(protected_header, payload, client.private_key)
+    r = requests.post(url, headers=header, data=data, verify='pebble.minica.pem')
+    client.acme_nonce = r.headers['Replay-Nonce']
+    return r
+
+def extract_challenges_dict(response, auth_url, challenge_type):
+    for c in response['challenges']:
+        if (challenge_type == c['type']):
+            challenge = c
+    challenge['domain'] = response['identifier']['value']
+    challenge['auth_url'] = auth_url
+    return challenge
+
+def poll_authorization_resource(client):
+    status = "pending"
+    while status != "valid":
+        r_dict = acme_server_request(client, client.acme_challenges[0]['auth_url'], "").json()
+        status = r_dict['status']
+        time.sleep(2)
+    return r_dict
+
 

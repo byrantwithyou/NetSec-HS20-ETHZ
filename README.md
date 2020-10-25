@@ -31,4 +31,4 @@ More information about ACME and relevant background can be found in RFC8555.
 
 ## Setup
 
-Start the Pebble server `pebble -config ./test/config/pebble-config.json`
+Start the Pebble server `PEBBLE_WFE_NONCEREJECT=0 pebble -config ./test/config/pebble-config.json --dnsserver 127.0.0.1:10053`
