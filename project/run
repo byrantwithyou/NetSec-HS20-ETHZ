@@ -4,3 +4,50 @@ echo "Changing to ${DIRECTORY}"
 cd  "$DIRECTORY" || exit 1
 
 echo "Run your project here."
+
+CHALLENGE_TYPE="$1"
+shift
+
+DOMAIN=()
+while [[ $# -gt 0 ]]
+do
+key="$1"
+
+case $key in
+    --dir)
+    DIR_URL="$2"
+    shift 
+    shift
+    ;;
+    --record)
+    IPV4_ADDRESS="$2"
+    shift 
+    shift 
+    ;;
+    --domain)
+    DOMAIN+=("$2")
+    shift 
+    shift 
+    ;;
+    --revoke)
+    REVOKE=" --revoke"
+    shift
+    ;;
+esac
+done
+
+CMD="python3 main.py \
+--chall $CHALLENGE_TYPE \
+--dir $DIR_URL \
+--record $IPV4_ADDRESS \
+--domain
+"
+
+for dmn in "${DOMAIN[@]}"
+do
+    CMD+=" $dmn"
+done
+
+CMD+="$REVOKE"
+
+$CMD

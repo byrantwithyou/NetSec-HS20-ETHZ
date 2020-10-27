@@ -1,8 +1,11 @@
 import util
 import json
 import hashlib
+from cryptography import x509
+from cryptography.x509.oid import NameOID
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives import serialization
+from cryptography.hazmat.primitives.serialization import Encoding
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.backends import default_backend as default_backend
 
@@ -63,6 +66,13 @@ def write_public_key(public_key, filename):
         f.write(pem)
         f.close()
 
+def write_certificate(cert, filename):
+    cert = x509.load_pem_x509_certificate(cert, default_backend())
+    pem = cert.public_bytes(serialization.Encoding.PEM)
+    with open(filename, 'wb') as f:
+        f.write(pem)
+        f.close()
+
 def load_private_key(filename):
     with open(filename, "rb") as f:
         private = serialization.load_pem_private_key(
@@ -76,3 +86,17 @@ def get_key_authorization(token, jwk):
     thumbprint = hashlib.sha256(jwk).digest()
     thumbprint = util.to_base64(thumbprint)
     return token + "." + thumbprint
+
+def get_csr(domains, private_key):
+    domain_names = []
+    for domain in domains:
+        domain_names.append(x509.DNSName(domain))
+
+    builder = x509.CertificateSigningRequestBuilder()
+    builder = builder.subject_name(x509.Name([
+        x509.NameAttribute(NameOID.COMMON_NAME, domains[0])]))
+    builder = builder.add_extension(x509.SubjectAlternativeName(
+        domain_names), critical=False)
+    request = builder.sign(private_key, hashes.SHA256(), default_backend())
+    request = util.to_base64(request.public_bytes(Encoding.DER))
+    return request

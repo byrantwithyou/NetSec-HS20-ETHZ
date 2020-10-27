@@ -27,7 +27,7 @@ def acme_server_request(client, url, payload):
     header = get_header()
     protected_header = get_protected_header(client.acme_nonce, 
         url, None, client.acme_key_id)
-    data = crypto.get_jws(protected_header, payload, client.private_key)
+    data = crypto.get_jws(protected_header, payload, client.account_private_key)
     r = requests.post(url, headers=header, data=data, verify='pebble.minica.pem')
     client.acme_nonce = r.headers['Replay-Nonce']
     return r
@@ -40,12 +40,13 @@ def extract_challenges_dict(response, auth_url, challenge_type):
     challenge['auth_url'] = auth_url
     return challenge
 
-def poll_authorization_resource(client):
+def poll_acme_server(client, url, payload, required_status):
     status = "pending"
-    while status != "valid":
-        r_dict = acme_server_request(client, client.acme_challenges[0]['auth_url'], "").json()
+    while status != required_status:
+        r_dict = acme_server_request(client, url, payload).json()
         status = r_dict['status']
         time.sleep(2)
+        print(r_dict)
     return r_dict
 
 
