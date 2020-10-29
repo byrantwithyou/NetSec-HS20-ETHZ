@@ -162,6 +162,6 @@ class ACME_Client():
         cert = util.to_base64(self.acme_certificate)
         payload = {'certificate': cert}
         r = util.acme_server_request(self, self.acme_revokeCert_url, payload)
-        self.logger(r.headers)
+        self.logger.debug(r.headers)
 
 
