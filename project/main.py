@@ -34,11 +34,10 @@ client.finalize_order()
 client.download_certificate()
 
 if(arguments.revoke):
-    #TODO
-    pass
+    client.revoke_certificate()
 
 # start certificate server
-certificate_server = CertificateServer(client.acme_certificate, arguments.record)
+certificate_server = CertificateServer(client.acme_certificate_str, arguments.record)
 certificate_server.start()
 
 

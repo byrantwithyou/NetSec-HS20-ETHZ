@@ -95,8 +95,6 @@ class ACME_Client():
             chall_url = challenge["url"]
             key_auth = crypto.get_key_authorization(token, self.jwk)
 
-            print(self.record_addr)
-
             zone = ". 60 IN A " + self.record_addr
             resolver = DnsResolver(zone)
             dns_server = DNSServer(resolver, address=self.record_addr, port=10053)
@@ -154,8 +152,16 @@ class ACME_Client():
     def download_certificate(self):
         self.logger.info("Downloading certificate to cert.pem")
         r = util.acme_server_request(self, self.acme_certificate_url, "") 
-        self.acme_certificate = r.content.decode("utf-8")
+        self.acme_certificate_str = r.content.decode("utf-8")
+        self.acme_certificate = crypto.pem_to_der_certificate(r.content)
         crypto.write_certificate(r.content, 'cert.pem')
         self.logger.debug(self.acme_certificate)
+    
+    def revoke_certificate(self):
+        self.logger.info("Revoking Certificate")
+        cert = util.to_base64(self.acme_certificate)
+        payload = {'certificate': cert}
+        r = util.acme_server_request(self, self.acme_revokeCert_url, payload)
+        self.logger(r.headers)
 
 

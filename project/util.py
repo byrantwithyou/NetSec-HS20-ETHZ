@@ -46,7 +46,6 @@ def poll_acme_server(client, url, payload, required_status):
         r_dict = acme_server_request(client, url, payload).json()
         status = r_dict['status']
         time.sleep(2)
-        print(r_dict)
     return r_dict
 
 

@@ -4,6 +4,8 @@ echo "Changing to ${DIRECTORY}"
 cd  "$DIRECTORY" || exit 1
 
 echo "Run your project here."
+rm pk.pem
+rm cert.pem
 
 CHALLENGE_TYPE="$1"
 shift

@@ -81,6 +81,10 @@ def load_private_key(filename):
         f.close()
     return private
 
+def pem_to_der_certificate(cert):
+    cert = x509.load_pem_x509_certificate(cert, default_backend())
+    return cert.public_bytes(Encoding.DER)
+
 def get_key_authorization(token, jwk):
     jwk = json.dumps(jwk, sort_keys=True, separators=(',', ':')).encode('utf8')
     thumbprint = hashlib.sha256(jwk).digest()
