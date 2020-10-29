@@ -27,6 +27,7 @@ class ACME_Client():
 
         self.account_private_key = crypto.create_rsa_private_key()
         self.certificate_private_key = crypto.create_rsa_private_key()
+        crypto.write_private_key(self.certificate_private_key, 'pk.pem')
         self.account_public_key = self.account_private_key.public_key()
         self.jwk = crypto.get_jwk_from_public_key(self.account_public_key)
 

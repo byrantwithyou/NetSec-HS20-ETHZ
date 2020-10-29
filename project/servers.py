@@ -38,13 +38,14 @@ class CertificateServer(Process):
         self.host = host
 
     def run(self):
+        context = ('cert.pem', 'pk.pem')
         self.app = Flask(__name__)
 
         @self.app.route('/')
         def return_certificate():
             return self.certificate
 
-        self.app.run(host=self.host, port=5001)
+        self.app.run(host=self.host, port=5001, ssl_context=context)
 
 class ShutdownServer:
     # This Server should be blocking and thus
