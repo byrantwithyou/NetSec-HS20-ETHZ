@@ -5,7 +5,6 @@ from dnslib.dns import RR
 import copy
 
 class ChallengeServer(Process):
-
     def __init__(self, token, key_authorization, host):
         Process.__init__(self)
         self.token = token
@@ -31,7 +30,6 @@ class DnsResolver(BaseResolver):
         return reply
 
 class CertificateServer(Process):
-
     def __init__(self, cert, host):
         Process.__init__(self)
         self.certificate = cert

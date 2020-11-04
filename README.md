@@ -29,6 +29,24 @@ More information about ACME and relevant background can be found in RFC8555.
 3. `cd $GOPATH/src/github.com/letsencrypt/pebble && go install ./...`
 4. `pebble -h`
 
-## Setup
+## Run
 
-Start the Pebble server `PEBBLE_WFE_NONCEREJECT=0 pebble -config ./test/config/pebble-config.json --dnsserver 127.0.0.1:10053`
+1. Start the Pebble server `pebble -config ./test/config/pebble-config.json --dnsserver 127.0.0.1:10053`
+2. Example run: `run dns01 --dir https://example.com/dir --record 1.2.3.4 --domain netsec.ethz.ch --domain syssec.ethz.ch`
+
+## Arguments
+
+### Positional arguments:
+
+* `Challenge type` *(required, `{dns01 | http01}`)* indicates which ACME challenge type the client should perform. Valid options are `dns01` and `http01` for the `dns-01` and `http-01` challenges, respectively.
+
+### Keyword arguments:
+
+* `--dir DIR_URL` *(required)* `DIR_URL` is the directory URL of the ACME server that should be used.
+
+* `--record IPv4_ADDRESS` *(required)* `IPv4_ADDRESS` is the IPv4 address which must be returned by your DNS server for all A-record queries.
+
+* `--domain DOMAIN` *(required, multiple)* `DOMAIN` is the domain for  which to request the certificate. If multiple `--domain` flags are present, a single certificate for multiple domains should be requested. Wildcard domains have no special flag and are simply denoted by, e.g., `*.example.net`.
+
+* `--revoke` *(optional)* If present, your application should immediately revoke the certificate after obtaining it. In both cases, your application should start its HTTPS server and set it up to use the newly obtained certificate.
+
